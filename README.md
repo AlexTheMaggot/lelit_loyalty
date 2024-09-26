@@ -1,1 +1,0 @@
-# lelit_loyalty
