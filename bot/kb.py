@@ -12,6 +12,8 @@ keys = {
     'female_uz': KeyboardButton(text="🙍🏻‍♀️ Ayol"),
     'back_ru': KeyboardButton(text='🔙 Назад'),
     'back_uz': KeyboardButton(text="🔙 Orqaga"),
+    'balance_ru': KeyboardButton(text='💰 Баланс'),
+    'balance_uz': KeyboardButton(text="💰 Balans"),
 }
 
 city_keys_ru = [
@@ -66,4 +68,14 @@ cities_uz = ReplyKeyboardMarkup(
               else [city_keys_uz[i * 2]] for i in range((len(city_keys_uz) + 1) // 2)],
     resize_keyboard=True,
     one_time_keyboard=True
+)
+main_menu_kb_ru = ReplyKeyboardMarkup(
+    keyboard=[[keys['balance_ru']]],
+    resize_keyboard=True,
+    one_time_keyboard=True,
+)
+main_menu_kb_uz = ReplyKeyboardMarkup(
+    keyboard=[[keys['balance_uz']]],
+    resize_keyboard=True,
+    one_time_keyboard=True,
 )
