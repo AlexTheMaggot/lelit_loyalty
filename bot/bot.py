@@ -25,6 +25,7 @@ class Menu(StatesGroup):
     gender = State()
     birth_date = State()
     city = State()
+    main_menu = State()
 
 
 @dp.message(CommandStart())
@@ -126,17 +127,42 @@ async def contact_handler(message: Message, state: FSMContext) -> None:
     user = await db.user_get_or_create(message.chat.id)
     code = Code128(user.barcode, writer=ImageWriter())
     code.save(f'barcodes/{user.barcode}')
+    await state.set_state(Menu.main_menu)
     if user.lang == 'uz':
         text = "Roʻyxatdan oʻtish tugallandi! Balansingiz 0 ball. "
         text += "Ballarni olish uchun xarid paytida shtrix-kodni kassirga ko'rsating."
+        keyboard = kb.main_menu_kb_uz
     else:
         text = 'Регистрация завершена! Ваш баланс - 0 баллов. '
         text += 'Для получения баллов покажите штрих-код кассиру при покупке.'
+        keyboard = kb.main_menu_kb_ru
     await bot.send_photo(
         chat_id=message.chat.id,
         photo=FSInputFile(f'barcodes/{user.barcode}.png'),
-        caption=text
+        caption=text,
+        reply_markup=keyboard
     )
+
+
+@dp.message(Menu.main_menu)
+async def main_menu_handler(message: Message, state: FSMContext) -> None:
+    user = await db.user_get_or_create(message.chat.id)
+    match message.text:
+        case '💰 Баланс':
+            text = f'Ваш баланс - {user.balance} баллов'
+            keyboard = kb.main_menu_kb_ru
+        case "💰 Balans":
+            text = f"Balansingiz - {user.balance} ball"
+            keyboard = kb.main_menu_kb_uz
+        case _:
+            if user.lang == 'ru':
+                text = 'Пожалуйста, выберите пункт меню'
+                keyboard = kb.main_menu_kb_ru
+            else:
+                text = "Menyu bandini tanlang"
+                keyboard = kb.main_menu_kb_uz
+    await message.answer(text=text, reply_markup=keyboard)
+
 
 
 async def main() -> None:
