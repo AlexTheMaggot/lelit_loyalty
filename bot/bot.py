@@ -106,22 +106,62 @@ async def birth_date_handler(message: Message, state: FSMContext) -> None:
 @dp.message(Menu.city)
 async def city_handler(message: Message, state: FSMContext) -> None:
     user = await db.user_get_or_create(message.chat.id)
-    if user.lang == 'uz':
-        text = f"{user.name}, ro'yxatdan o'tishni yakunlash uchun aloqa ma'lumotlarini "
-        text += "taqdim eting, buning uchun quyidagi tugmani bosing"
-        button = kb.contact_uz
+    cities = [
+        'Ташкент',
+        'Самарканд',
+        'Фергана',
+        'Карши',
+        'Андижан',
+        'Нурафшон',
+        'Наманган',
+        'Термез',
+        'Бухара',
+        'Нукус',
+        'Ургенч',
+        'Джиззак',
+        'Навои',
+        'Гулистан',
+        'Toshkent',
+        'Samarqand',
+        "Farg'ona",
+        'Qarshi',
+        'Andijon',
+        'Nurafshon',
+        'Namangan',
+        'Termiz',
+        'Buxoro',
+        'Nukus',
+        'Urganch',
+        'Jizzax',
+        'Navoiy',
+        'Guliston',
+    ]
+    if message.text in cities:
+        user.city = message.text
+        await user.asave()
+        if user.lang == 'uz':
+            text = f"{user.name}, ro'yxatdan o'tishni yakunlash uchun aloqa ma'lumotlarini "
+            text += "taqdim eting, buning uchun quyidagi tugmani bosing"
+            button = kb.contact_uz
+        else:
+            text = f'{user.name}, для завершения регистрации предоставьте свои контактные данные, '
+            text += 'для этого нажмите на кнопку ниже'
+            button = kb.contact_ru
+        await state.set_state(Menu.contact)
     else:
-        text = f'{user.name}, для завершения регистрации предоставьте свои контактные данные, '
-        text += 'для этого нажмите на кнопку ниже'
-        button = kb.contact_ru
-    await state.set_state(Menu.contact)
+        if user.lang == 'ru':
+            text = 'Пожалуйста, укажите город из списка'
+            button = kb.cities_ru
+        else:
+            text = "Roʻyxatdan shaharni tanlang"
+            button = kb.cities_uz
     await message.answer(text, reply_markup=button)
 
 
 @dp.message(Menu.contact)
 async def contact_handler(message: Message, state: FSMContext) -> None:
     user = await db.user_get_or_create(message.chat.id)
-    user.phone_number = message.contact.phone_number
+    user.phone = message.contact.phone_number
     await user.asave()
     await db.user_barcode_generate(user.user_id)
     user = await db.user_get_or_create(message.chat.id)
@@ -163,6 +203,35 @@ async def main_menu_handler(message: Message, state: FSMContext) -> None:
                 keyboard = kb.main_menu_kb_uz
     await message.answer(text=text, reply_markup=keyboard)
 
+
+@dp.message()
+async def main_handler(message: Message, state: FSMContext) -> None:
+    user = await db.user_get_or_create(message.chat.id)
+    if user.phone:
+        await state.set_state(Menu.main_menu)
+        if user.lang == 'ru':
+            text = 'Пожалуйста, выберите пункт меню'
+            keyboard = kb.main_menu_kb_ru
+        else:
+            text = "Menyu bandini tanlang"
+            keyboard = kb.main_menu_kb_uz
+        await message.answer(text=text, reply_markup=keyboard)
+    else:
+        text = 'Добро пожаловать в мир комфорта и уюта Lelit Home Textile. Мы рады создавать уютные решения с хлопковых'
+        text += ' полей прямо в ваш дом и дарить вам бонусные баллы за каждую покупку 🤍\n\nЗдесь вы можете накапливать'
+        text += ' баллы и обменивать их но любые изделия в любых наших официальных магазинах.✨\n\n Пожалуйста, укажите'
+        text += " язык.\n\n"
+        text += "------------------------------\n\n"
+        text += "Lelit Home Textile shinamlik va qulaylik dunyosiga xush kelibsiz. Biz paxta dalalaridan"
+        text += " to'g'ridan-to'g'ri sizning uyingizga qulay yechimlarni yaratishdan va har bir xarid uchun bonus"
+        text += " ballarini berishdan mamnunmiz 🤍\n\nBu yerda siz ballarni to'plashingiz va ularni istalgan rasmiy"
+        text += " do'konlarimizdan tashqari istalgan mahsulotga almashtirishingiz mumkin.✨\n\n Iltimos, tilni tanlang."
+        await state.set_state(Menu.language)
+        await bot.send_photo(
+            chat_id=message.chat.id,
+            photo=FSInputFile('start.jpg'),
+            caption=text, reply_markup=kb.languages
+        )
 
 
 async def main() -> None:
