@@ -10,3 +10,10 @@ class User(models.Model):
     birth_date = models.CharField(max_length=10, null=True, blank=True)
     city = models.CharField(max_length=20, null=True, blank=True)
     balance = models.IntegerField()
+
+
+class Purchase(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    sum = models.IntegerField()
+    type = models.CharField(max_length=5)
+    datetime = models.IntegerField()
