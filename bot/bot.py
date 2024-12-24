@@ -182,6 +182,13 @@ async def contact_handler(message: Message, state: FSMContext) -> None:
         caption=text,
         reply_markup=keyboard
     )
+    info_text = f'Новый пользователь!\n\nИмя: {user.name}\nНомер телефона: {user.phone}\n'
+    info_text += f'Дата рождения: {user.birth_date}\nГород: {user.city}\nБаркод: {user.barcode}\n'
+    if user.lang == 'ru':
+        info_text += 'Предпочитаемый язык: Русский'
+    else:
+        info_text += 'Предпочитаемый язык: Узбекский'
+    await bot.send_message(chat_id=-1002432390765, text=info_text)
 
 
 @dp.message(Menu.main_menu)
