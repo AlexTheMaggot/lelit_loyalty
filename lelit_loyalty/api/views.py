@@ -68,6 +68,7 @@ def index(request):
                         elif req['params']['type'] == 'bonus':
                             info_text += 'Тип оплаты: Бонусы\n'
                         info_datetime = datetime.datetime.fromtimestamp(req["params"]["datetime"])
+                        info_datetime = info_datetime + datetime.timedelta(hours=5)
                         info_text += f'Дата платежа: {info_datetime.strftime('%d.%m.%Y %H:%M:%S')}'
                         info_link = f'https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage'
                         info_link += f'?chat_id=-1002432390765&text={info_text}'
