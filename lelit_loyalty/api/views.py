@@ -7,6 +7,13 @@ import datetime
 import requests
 from lelit_loyalty.config import *
 
+
+def tg_sender(chat_id, text):
+    link = f'https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage'
+    link += f'?chat_id={chat_id}&text={text}'
+    r = requests.get(url=link)
+
+
 def index(request):
     try:
         req = json.loads(request.body)
@@ -68,12 +75,17 @@ def index(request):
                         elif req['params']['type'] == 'bonus':
                             info_text += 'Тип оплаты: Бонусы\n'
                         info_datetime = datetime.datetime.fromtimestamp(req["params"]["datetime"])
-                        info_datetime = info_datetime + datetime.timedelta(hours=5)
+                        info_datetime = info_datetime + datetime.timedelta(hours=1)
                         info_text += f'Дата платежа: {info_datetime.strftime('%d.%m.%Y %H:%M:%S')}'
-                        info_link = f'https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage'
-                        info_link += f'?chat_id=-1002432390765&text={info_text}'
-                        r = requests.get(url=info_link)
-                        print(r.text)
+                        tg_sender(-1002432390765, info_text)
+                        client_text_ru = f'Спасибо за покупку!\nВы получили {int(req['params']['total_sum'] / 10000)} '
+                        client_text_ru += f'баллов.\nВаш баланс - {user.balance} баллов'
+                        client_text_uz = f"Xaridingiz uchun rahmat!\nSiz {int(req['params']['total_sum'] / 10000)} "
+                        client_text_uz += f"ball oldingiz.\nBalansingiz {user.balance} ball"
+                        if user.lang == 'ru':
+                            tg_sender(user.user_id, client_text_ru)
+                        else:
+                            tg_sender(user.user_id, client_text_uz)
                         return JsonResponse(data)
                     except ObjectDoesNotExist:
                         data['error'] = ERRORS[1003]
